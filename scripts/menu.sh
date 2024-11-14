@@ -42,6 +42,7 @@ function menu {
 
     done
 
+    printf "\n"
     return $selected
 
 }

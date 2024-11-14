@@ -1,0 +1,90 @@
+#!/bin/bash
+# source scripts
+source /opt/bashfetch/scripts/mem.sh
+source /opt/bashfetch/scripts/disk.sh
+source /opt/bashfetch/scripts/user.sh
+source /opt/bashfetch/scripts/menu.sh
+source /opt/bashfetch/scripts/cpu.sh
+ESC=$(printf "\033")
+COLOR="[36m"
+RESET="[0m"
+CONFIG="/home/$USER/.config/bashfetch/config"
+
+# Function to get row of the cursor
+cursor_row() { 
+  IFS=";" read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[} 
+}
+
+
+function robot {
+echo '__________
+\______   \
+ |    |  _/
+ |    |   \
+ |______  /
+        \/'
+}
+function main {
+  robot
+  opts=()
+  while IFS='' read -r opt; do
+    opts+=("$opt")
+  done < $CONFIG
+  Y=$(cursor_row)
+  printf "\033[$(($Y - 6));15H"
+  printf "$ESC[4m$ESC[35mSTATS$ESC[0m"
+  local idx=5
+  for i in ${opts[@]}; do
+    printf "$ESC[$(($Y - $idx));15H"
+    [[ $i == "memory" ]] && mem && printf "$ESC[36mMemory:$ESC[0m $MEMUSED/$MEMTOTAL" 
+    [[ $i == "disk" ]] && disk && printf "$ESC[36mDISK:$ESC[0m $DISKUSED/$DISKTOTAL"
+    [[ $i == "username" ]] && user && printf "$ESC[36mUsername:$ESC[0m $USERNAME"
+    [[ $i == "hostname" ]] && host && printf "$ESC[36mHostname:$ESC[0m $HOSTNAME"
+    [[ $i == "cpu" ]] && cpu && printf "$ESC[36mCPU:$ESC[0m $CPU"
+    ((idx--))
+  done
+  printf "$ESC[$Y;-1H"
+}
+
+function config {
+    opts=()
+    while IFS='' read -r opt; do
+      opts+=("$opt")
+    done < config
+    CHOICES=("Add" "Remove")
+    echo "Would like to remove or add a stat? Up/Down Keys to navigate menu"
+    menu ${CHOICES[@]}
+    X=$?
+    CHOICE=${CHOICES[$X]}
+    if [[ "$CHOICE" == "Add" ]]; then
+      all=("memory" "cpu" "disk" "hostname" "username")
+      for j in ${all[@]}; do
+        for i in ${opts[@]}; do
+          if [[ $i -eq $j ]]; then
+            all=(${all[@]/$i})
+          fi
+        done
+      done
+      echo "Please select stat to add. Up/Down Keys to navigate menu"
+      menu ${all[@]} 
+      STAT=$?
+      echo "${all[$STAT]}" >> $CONFIG
+    elif [[ "$CHOICE" == "Remove" ]]; then
+      echo "Please select a stat to be removed. Up/Down Keys to navigate menu"
+      menu ${opts[@]}
+      STAT=$?
+      sed -i "/${opts[$STAT]}/d" $CONFIG
+    fi
+}
+
+case $@ in
+  "--config")
+    config
+    ;;
+  "")
+    main
+    ;;
+  *)
+    echo "Not an option 'bashfetch --help' to get options"
+    ;;
+esac
