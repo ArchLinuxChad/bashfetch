@@ -17,6 +17,7 @@ cursor_row() {
 
 
 function robot {
+printf "$ESC[35m"
 echo '__________
 \______   \
  |    |  _/
@@ -24,6 +25,7 @@ echo '__________
  |______  /
         \/'
 }
+printf "$ESC$RESET"
 function main {
   robot
   opts=()
@@ -40,7 +42,16 @@ function main {
     [[ $i == "disk" ]] && disk && printf "$ESC[36mDISK:$ESC[0m $DISKUSED/$DISKTOTAL"
     [[ $i == "username" ]] && user && printf "$ESC[36mUsername:$ESC[0m $USERNAME"
     [[ $i == "hostname" ]] && host && printf "$ESC[36mHostname:$ESC[0m $HOSTNAME"
-    [[ $i == "cpu" ]] && cpu && printf "$ESC[36mCPU:$ESC[0m $CPU"
+    if [[ $i == "cpu" ]]; then
+      cpu 
+      WIDTH=$(stty size | awk '{print $2}')
+      CPUWIDTH=$(echo ${#CPU})
+      DIFF=$(($WIDTH - 5 - $CPUWIDTH))
+      if [[ $CPUWIDTH -ge $DIFF ]]; then
+        CPU=$(echo $CPU | cut -c 1-15)
+      fi
+      printf "$ESC[36mCPU:$ESC[0m $CPU"
+    fi
     ((idx--))
   done
   printf "$ESC[$Y;-1H"
@@ -50,7 +61,7 @@ function config {
     opts=()
     while IFS='' read -r opt; do
       opts+=("$opt")
-    done < config
+    done < $CONFIG
     CHOICES=("Add" "Remove")
     echo "Would like to remove or add a stat? Up/Down Keys to navigate menu"
     menu ${CHOICES[@]}
