@@ -43,12 +43,14 @@ function main {
     [[ $i == "username" ]] && user && printf "$ESC[36mUsername:$ESC[0m $USERNAME"
     [[ $i == "hostname" ]] && host && printf "$ESC[36mHostname:$ESC[0m $HOSTNAME"
     if [[ $i == "cpu" ]]; then
-      cpu 
+      cpu
       WIDTH=$(stty size | awk '{print $2}')
-      CPUWIDTH=$(echo ${#CPU})
-      DIFF=$(($WIDTH - 5 - $CPUWIDTH))
-      if [[ $CPUWIDTH -ge $DIFF ]]; then
-        CPU=$(echo $CPU | cut -c 1-15)
+      SIZE=$(echo ${#CPU})
+      SIZE=$(($SIZE + 18))
+      if [[ $SIZE -ge $WIDTH ]]; then
+        CUTL=$(($SIZE - $WIDTH))
+        CUTL=$(($SIZE - $CUTL - 19))
+        CPU=$(echo $CPU | cut -c "1-$CUTL")     
       fi
       printf "$ESC[36mCPU:$ESC[0m $CPU"
     fi
