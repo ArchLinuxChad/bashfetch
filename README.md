@@ -7,7 +7,7 @@ A simple and sleek system fetch tool written in bash
 ```
 
 # to configure
-bashfetch is different in that you do not need to eidt the config file you can instead edit it with the intractive prompt by typing.
+bashfetch is different in that you do not need to edit the config file you can instead edit it with the interactive prompt by typing.
 ```bash
 bashfetch --config
 ```
